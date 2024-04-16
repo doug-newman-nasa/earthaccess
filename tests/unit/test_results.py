@@ -17,7 +17,7 @@ logging.basicConfig()
 vcr_log = logging.getLogger("vcr")
 vcr_log.setLevel(logging.ERROR)
 
-headers_to_filters = ["authorization", "Set-Cookie", "User-Agent", "Accept-Encoding"]
+headers_to_filters = ["authorization", "Set-Cookie", "User-Agent", "Accept-Encoding", "Cookie"]
 
 
 def assert_unique_results(results):
@@ -32,25 +32,34 @@ def assert_unique_results(results):
 
 class TestResults(unittest.TestCase):
     def test_data_links(self):
-        granules = earthaccess.search_data(
-            short_name="SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205",
-            temporal=("2020", "2022"),
-            count=1,
-        )
-        g = granules[0]
-        # `access` specified
-        assert g.data_links(access="direct")[0].startswith("s3://")
-        assert g.data_links(access="external")[0].startswith("https://")
-        # `in_region` specified
-        assert g.data_links(in_region=True)[0].startswith("s3://")
-        assert g.data_links(in_region=False)[0].startswith("https://")
-        # When `access` and `in_region` are both specified, `access` takes priority
-        assert g.data_links(access="direct", in_region=True)[0].startswith("s3://")
-        assert g.data_links(access="direct", in_region=False)[0].startswith("s3://")
-        assert g.data_links(access="external", in_region=True)[0].startswith("https://")
-        assert g.data_links(access="external", in_region=False)[0].startswith(
-            "https://"
-        )
+        # In this test we send an auth token in the body of a request to EDL. 
+        # This will vary depending on the user and when the user runs the test
+        # So we have to ignore it.
+        with my_vcr.use_cassette(
+            "tests/unit/fixtures/vcr_cassettes/SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205.yaml",
+            filter_headers=headers_to_filters
+        ):
+            granules = earthaccess.search_data(
+                short_name="SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205",
+                temporal=("2020", "2022"),
+                count=1,
+            )
+            g = granules[0]
+            # `access` specified
+            assert g.data_links(access="direct")[0].startswith("s3://")
+            assert g.data_links(access="external")[0].startswith("https://")
+            # `in_region` specified
+            assert g.data_links(in_region=True)[0].startswith("s3://")
+            assert g.data_links(in_region=False)[0].startswith("https://")
+            # When `access` and `in_region` are both specified, `access` takes priority
+            assert g.data_links(access="direct", in_region=True)[0].startswith("s3://")
+            assert g.data_links(access="direct", in_region=False)[0].startswith("s3://")
+            assert g.data_links(access="external", in_region=True)[0].startswith(
+                "https://"
+            )
+            assert g.data_links(access="external", in_region=False)[0].startswith(
+                "https://"
+            )
 
     def test_get_more_than_2000(self):
         """
