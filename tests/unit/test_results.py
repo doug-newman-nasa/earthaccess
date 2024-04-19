@@ -17,7 +17,13 @@ logging.basicConfig()
 vcr_log = logging.getLogger("vcr")
 vcr_log.setLevel(logging.ERROR)
 
-headers_to_filters = ["authorization", "Set-Cookie", "User-Agent", "Accept-Encoding", "Cookie"]
+headers_to_filters = [
+    "authorization",
+    "Set-Cookie",
+    "User-Agent",
+    "Accept-Encoding",
+    "Cookie",
+]
 
 
 def assert_unique_results(results):
@@ -32,12 +38,12 @@ def assert_unique_results(results):
 
 class TestResults(unittest.TestCase):
     def test_data_links(self):
-        # In this test we send an auth token in the body of a request to EDL. 
+        # In this test we send an auth token in the body of a request to EDL.
         # This will vary depending on the user and when the user runs the test
         # So we have to ignore it.
         with my_vcr.use_cassette(
             "tests/unit/fixtures/vcr_cassettes/SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205.yaml",
-            filter_headers=headers_to_filters
+            filter_headers=headers_to_filters,
         ):
             granules = earthaccess.search_data(
                 short_name="SEA_SURFACE_HEIGHT_ALT_GRIDS_L4_2SATS_5DAY_6THDEG_V_JPL2205",
