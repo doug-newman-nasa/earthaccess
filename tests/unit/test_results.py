@@ -5,7 +5,16 @@ from earthaccess.search import DataCollections
 from vcr.unittest import VCRTestCase  # type: ignore[import-untyped]
 
 logging.basicConfig()
-logging.getLogger("vcr").setLevel(logging.ERROR)
+vcr_log = logging.getLogger("vcr")
+vcr_log.setLevel(logging.ERROR)
+
+headers_to_filters = [
+    "authorization",
+    "Set-Cookie",
+    "User-Agent",
+    "Accept-Encoding",
+    "Cookie",
+]
 
 headers_to_filters = [
     "authorization",
